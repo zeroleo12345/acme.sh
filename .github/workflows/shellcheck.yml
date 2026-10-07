@@ -2,13 +2,13 @@ name: Shellcheck
 on:
   push:
     branches:
-      - '*'
+      - 'zlx*'
     paths:
       - '**.sh'
       - '.github/workflows/shellcheck.yml'
   pull_request:
     branches:
-      - dev
+      - 'zlx*'
     paths:
       - '**.sh'
       - '.github/workflows/shellcheck.yml'
