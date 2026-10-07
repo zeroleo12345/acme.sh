@@ -23,7 +23,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  DOCKER_IMAGE: neilpang/acme.sh
+  DOCKER_IMAGE: zeroleo12345/acme.sh
 
 jobs:
   CheckToken:
@@ -106,37 +106,3 @@ jobs:
             ${DOCKER_IMAGE}:${DOCKER_IMAGE_TAG} \
             || echo "::warning::GHCR mirror failed; Docker Hub publish unaffected"
 
-  rebuild:
-    # weekly: dispatch this workflow on the latest release tag so the tag
-    # rebuilds its own image from its own commit and its own workflow file
-    runs-on: ubuntu-latest
-    if: github.event_name == 'schedule'
-    permissions:
-      contents: read
-      actions: write
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    steps:
-      - name: dispatch a rebuild of the latest release tag
-        run: |
-          tag="$(gh api "repos/${GITHUB_REPOSITORY}/releases/latest" --jq .tag_name)"
-          if [ -z "$tag" ]; then
-            echo "::error::cannot resolve the latest release tag"
-            exit 1
-          fi
-          echo "dispatching a rebuild of ${tag}"
-          # A tag cut before this job existed carries a workflow file with no
-          # workflow_dispatch trigger; the API rejects the dispatch with 422.
-          # That is expected (nothing to rebuild there), so only a different
-          # error fails the job.
-          if ! out="$(gh workflow run dockerhub.yml --repo "${GITHUB_REPOSITORY}" --ref "${tag}" 2>&1)"; then
-            echo "$out"
-            case "$out" in
-            *"does not have 'workflow_dispatch' trigger"*)
-              echo "::warning::${tag} predates the dispatch trigger; skipping the rebuild"
-              ;;
-            *)
-              exit 1
-              ;;
-            esac
-          fi
