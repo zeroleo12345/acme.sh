@@ -3,7 +3,7 @@ name: Build DockerHub
 on:
   push:
     branches:
-      - '*'
+      - 'zlx*'
     tags:
       - '*'
     paths:
